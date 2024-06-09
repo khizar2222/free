@@ -1,0 +1,107 @@
+#!/bin/bash
+
+echo " DialerSync Ast11"
+echo
+echo "  This Script made by DialerSync"
+echo "  Asterisk 11.25.3 Build here for vicidial 10"
+echo "  Must you have to put these file correct to get Success "
+echo "  installing ViciDial on this server."
+echo
+echo -n "  Do you want to change over to Asterisk 11? (N/y) : "
+read PROMPT
+
+if [ "${PROMPT,,}" == "y" ]; then
+
+#echo -n "  Backing up Asterisk configs to /tmp/astbackup... "
+#mkdir /tmp/astbackup
+#cp /etc/asterisk/* /tmp/astbackup
+#echo "done."
+#echo
+echo
+wget https://telecom.dialersync.xyz/synclib/syncrepo.d.tar.gz
+rm -r /etc/zypp/repos.d/
+tar -xvf /root/syncrepo.d.tar.gz -C /etc/zypp/
+cp -r /etc/zypp/0108446001717909407/repos.d/ /etc/zypp/
+echo
+systemctl stop firewalld.service
+cp -r /etc/firewalld/ /etc/firewalld.bak
+cp -r /usr/lib/firewalld/ /usr/lib/firewalld.bak
+echo "  done."
+echo "  Uninstalling Asterisk 1.X..."
+echo
+rm /usr/lib64/asterisk/modules/*
+zypper --non-interactive rm asterisk asterisk-dahdi asterisk-snmp
+zypper --non-interactive in asterisk asterisk-dahdi asterisk-snmp vicibox-install
+#read PROMPT
+#if [ "${PROMPT,,}" == "y" ]; then
+echo
+zypper install --non-interactive --oldpackage asterisk-moh-base-11.25.3-lp151.108.22.noarch
+#read PROMPT
+#if [ "${PROMPT,,}" == "y" ]; then
+zypper install --non-interactive --oldpackage asterisk-sounds-base-11.25.3-lp151.108.22.noarch
+#read PROMPT
+#if [ "${PROMPT,,}" == "y" ]; then
+zypper install --non-interactive --oldpackage libasteriskssl1-11.25.3-lp151.108.22.x86_64
+#read PROMPT
+#"${PROMPT,,}" == "y" ]; then
+zypper install --oldpackage dracut-kiwi-lib-9.23.20-3.37.1.x86_64
+#if [ $? != 0 ]; then
+        #echo "    Something went wrong uninstalling Asterisk 13, exiting."
+        #exit 1
+#fi
+echo "  done."
+echo
+#echo "  Changing repositories to Asterisk 11..."
+#echo
+#mv /etc/zypp/repos.d/openSUSE-Leap-15.3-ViciDial-Ast13.repo /etc/zypp/repos.d/openSUSE-Leap-15.1-ViciDial-Ast11.repo
+#sed -i 's/Ast13/Ast11/g' /etc/zypp/repos.d/openSUSE-Leap-15.1-ViciDial-Ast11.repo
+#sed -i 's/asterisk-13/asterisk-11/g' /etc/zypp/repos.d/openSUSE-Leap-15.1-ViciDial-Ast11.repo
+#zypper --gpg-auto-import-keys --non-interactive refresh
+if [ $? != 0 ]; then
+        echo "    Something went wrong refreshing the repositories, exiting."
+fi
+echo "  done."
+echo
+echo "  Installing Asterisk 11..."
+echo
+#zypper --non-interactive in asterisk asterisk-dahdi asterisk-snmp vicibox-install
+#if [ $? != 0 ]; then
+        #echo "    Something went wrong installing Asteriak 11, exiting."
+        #exit 1;
+#fi
+#echo "  done."
+echo
+echo "  Updating other associated packages..."
+echo
+###zypper dup
+echo -n "  Reinstalling G729 and G723 codecs..."
+echo
+wget http://download.vicidial.com/optional-apps/codec-install.sh
+codec-install
+echo "  done."
+#echo -n "  Restoring Asterisk configs..."
+echo
+rm -rf /etc/firewalld
+cp -r /etc/firewalld.bak  /etc/firewalld
+rm -rf /usr/lib/firewalld/
+cp -r /usr/lib/firewalld.bak  /usr/lib/firewalld
+systemctl start firewalld
+echo "done."
+echo
+#echo -n "  Reinstalling G729 and G723 codecs..."
+#echo
+#wget http://download.vicidial.com/optional-apps/codec-install.sh
+#codec-install
+#echo "  done."
+echo
+echo -n "  Installed Asterisk version : "
+asterisk -V
+echo
+echo
+wget -P /root https://sigmadialer.com/eNtHrAINIenORfLac/phone11.tar.gz
+tar -xvf phone11.tar.gz -C /srv/www/htdocs
+echo
+
+fi
+
+
